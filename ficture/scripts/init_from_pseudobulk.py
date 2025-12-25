@@ -140,7 +140,8 @@ def init_model_from_pseudobulk(_args):
 
     # Unit assignment
     brc.rename(columns = {'j':'unit', 'X':'x', 'Y':'y'}, inplace = True)
-    brc['topK'] = np.argmax(theta, axis = 1).astype(int)
+    #brc['topK'] = np.argmax(theta, axis = 1).astype(int)
+    brc['topK'] = [factor_header[topk] for topk in np.argmax(theta, axis = 1).astype(int)]
     brc['topP'] = np.max(theta, axis = 1)
     brc = pd.concat((brc, pd.DataFrame(theta, columns = factor_header )), axis = 1)
     brc = brc.astype(dtp)

@@ -34,7 +34,6 @@ def make_dge(_args):
     parser.add_argument('--hex_radius', type=int, default=-1, help='')
     parser.add_argument('--min_ct_per_unit', type=int, default=20, help='')
     parser.add_argument('--min_density_per_unit', type=float, default=0.2, help='')
-    parser.add_argument('--fractional-count', type=int, help='Set to 1 if the count columns contain float values', default = 0)
 
     args = parser.parse_args(_args)
     if len(_args) == 0:
@@ -84,11 +83,8 @@ def make_dge(_args):
     min_ct_per_unit = max(args.min_ct_per_unit, args.min_density_per_unit * area)
 
     adt = {x:"sum" for x in ct_header}
-    dty = {x:str for x in ['X','Y','gene'] + args.group_within}
-    if args.fractional_count > 0:
-        dty.update({x:float for x in ct_header})
-    else:
-        dty.update({x:int for x in ct_header})
+    dty = {x:int for x in ct_header}
+    dty.update({x:str for x in ['X','Y','gene'] + args.group_within})
 
     use_boundary = False
     if os.path.isfile(args.boundary):
@@ -172,11 +168,10 @@ def make_dge(_args):
                     sub = sub.merge(right = cnt, on = 'random_index', how = 'inner')
                     sub['X'] = [f"{x:.{args.precision}f}" for x in sub.X.values]
                     sub['Y'] = [f"{x:.{args.precision}f}" for x in sub.Y.values]
-                    if args.fractional_count == 0:
-                        sub = sub.astype({x:int for x in ct_header})
+                    sub = sub.astype({x:int for x in ct_header})
                     # Add offset combination as prefix to random_index
                     sub.random_index = prefix + sub.random_index.values
-                    sub.loc[:, output_header].to_csv(args.output, mode='a', sep='\t', index=False, header=False, float_format='%.2f')
+                    sub.loc[:, output_header].to_csv(args.output, mode='a', sep='\t', index=False, header=False)
                     n_unit += len(ct)
                     logging.info(f"Sliding offset {offs_x}, {offs_y}. Add {len(ct)} units, median count {mid_ct}, {n_unit} units so far.")
                     offs_y += 1

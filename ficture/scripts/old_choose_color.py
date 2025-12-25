@@ -60,7 +60,6 @@ def choose_color(_args):
     parser.add_argument('--top_color', type=str, default="#fcd217", help="HEX color code for the top factor")
     parser.add_argument('--even_space', action='store_true', help="Evenly space the factors on the circle")
     parser.add_argument('--annotation', type=str, default = '', help='')
-    parser.add_argument('--palette', type=str, default = '', help='')
     parser.add_argument('--circle', action='store_true', help="")
     parser.add_argument('--seed', type=int, default=-1, help='')
     args = parser.parse_args(_args)
@@ -149,37 +148,12 @@ def choose_color(_args):
         df["Annotation"] = df.Name.map(factor_name)
         cdict = {factor_name[str(k)]:cmtx[k,:] for k in range(K)}
 
-    if args.palette:
-        pal = pd.read_csv(args.palette, sep='\t', header=0, dtype={x:float for x in ['B','G','R']})
-        if 'Annotation' in pal.columns:
-            pal = pal.drop_duplicates(subset='Annotation', keep='first')
-
-        merged_df = pd.merge(df, 
-                             pal[["R", "G", "B", "Annotation"]], 
-                             on='Annotation', 
-                             how='left', 
-                             suffixes=('_x', '_y'))
-
-        merged_df[['R', 'G', 'B']] = merged_df[['R_y', 'G_y', 'B_y']]
-        merged_df.drop(columns=['R_x', 'G_x', 'B_x', 'R_y', 'G_y', 'B_y'], inplace=True)
-
-        if merged_df[['R', 'G', 'B']].max().max() > 1:
-            for c in ['R', 'G', 'B']:
-                merged_df[c] = merged_df[c] / 255
-
-        columns = ["Name", "Color_index", "R", "G", "B", "Annotation"]
-        df = merged_df[columns]
-
-        # 同步 cdict（matplotlib 需要 0–1）
-        c = df[['R', 'G', 'B']].to_numpy()
-        cdict = {factor_name.get(str(k), str(k)): np.append(c[k], 1.0) for k in range(K)}
-
     # Output RGB table
     f = args.output + ".rgb.tsv"
-    df.to_csv(f, sep='\t', index=False, float_format='%.5f')
+    df.to_csv(f, sep='\t', index=False)
 
     # Plot color bar
-    fig = plot_colortable(cdict, "Factor label", sort_colors=False, ncols=4, cell_width=322, cell_height=27)
+    fig = plot_colortable(cdict, "Factor label", sort_colors=False, ncols=4)
     f = args.output + ".cbar.png"
     fig.savefig(f, format="png", transparent=True)
 

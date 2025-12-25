@@ -58,7 +58,7 @@ factorID color weight totUMI topGene_byPval topGene_byFC
                 <tr>
                     {% for index, cell in row %}
                         <td>
-                            {% if index == 1 %}
+                            {% if index == 2 %}
                                 {% set r, g, b = cell.replace('(', '').replace(')', '').split(',') %}
                                 <div class="color-box rgb-column" style="background-color: rgb({{ r }}, {{ g }}, {{ b }});">
                                     <span style="color: {{ '#000' if (r|int * 0.299 + g|int * 0.587 + b|int * 0.114) > 186 else '#fff' }};">
